@@ -1,0 +1,182 @@
+@font-face {
+  font-family: 'Switzer';
+  src: url('../assets/fonts/Switzer-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Switzer';
+  src: url('../assets/fonts/Switzer-VariableItalic.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: auto;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+::selection {
+  background: rgba(27, 76, 193, 0.16);
+}
+
+:focus-visible {
+  outline: 2px solid var(--royal);
+  outline-offset: 3px;
+}
+
+/* Type scale */
+
+.h-display {
+  font-size: clamp(2.7rem, 6.1vw, 5.3rem);
+  font-weight: 450;
+  letter-spacing: -0.033em;
+  line-height: 1.02;
+}
+
+.h-xl {
+  font-size: clamp(2.3rem, 4.8vw, 4.2rem);
+  letter-spacing: -0.034em;
+  line-height: 1.04;
+}
+
+.h-lg {
+  font-size: clamp(1.9rem, 3.4vw, 3rem);
+  line-height: 1.08;
+}
+
+.label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.005em;
+}
+
+/* Buttons and links */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 999px;
+  padding: 0.85em 1.65em;
+  font-size: 0.98rem;
+  font-weight: 500;
+  line-height: 1;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
+  white-space: nowrap;
+}
+
+.pill-royal {
+  background: var(--royal);
+  color: #fff;
+}
+
+.pill-royal:hover {
+  background: var(--royal-deep);
+}
+
+.pill-light {
+  background: var(--bg);
+  color: var(--navy);
+}
+
+.pill-light:hover {
+  background: #ffffff;
+}
+
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--royal);
+  font-weight: 500;
+  font-size: 0.98rem;
+}
+
+.text-link::after {
+  content: '\2192';
+  transition: transform 0.25s var(--ease-out);
+}
+
+.text-link:hover::after {
+  transform: translateX(4px);
+}
+
+.quiet-link {
+  color: var(--charcoal);
+  font-weight: 500;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 2px;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.quiet-link:hover {
+  color: var(--ink);
+  border-color: var(--charcoal);
+}
+
+/* Layout */
+
+.container {
+  max-width: var(--max-w);
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+}
+
+/* Mask reveal helpers */
+
+.mask {
+  display: block;
+  overflow: hidden;
+}
+
+.mask-line {
+  display: block;
+  will-change: transform;
+}

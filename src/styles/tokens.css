@@ -1,0 +1,30 @@
+:root {
+  /* Backgrounds */
+  --bg: #fbfaf8;
+  --bg-soft: #f7f5f0;
+  --stone: #f0ede7;
+  --mist: #edf0f4;
+
+  /* Text */
+  --ink: #10131a;
+  --charcoal: #2b2f38;
+  --muted: #6e7480;
+
+  /* Accent */
+  --navy: #020838;
+  --royal: #1b4cc1;
+  --royal-deep: #163fa3;
+
+  /* Rules */
+  --rule: #e6e2d9;
+  --rule-mist: #d9dee6;
+
+  --font: 'Switzer', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  --pad-x: clamp(20px, 5vw, 72px);
+  --max-w: 1320px;
+  --nav-h: 76px;
+  --radius-media: 22px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
