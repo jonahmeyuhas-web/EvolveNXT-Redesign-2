@@ -71,21 +71,21 @@ void main() {
   float hU = texture(uState, uv - vec2(0.0, uTexel.y)).r;
   float hD = texture(uState, uv + vec2(0.0, uTexel.y)).r;
   vec2 grad = vec2(hR - hL, hD - hU);
-  float h = texture(uState, uv).r;
   vec2 vuv = uv * uCoverScale + uCoverOffset;
-  // Refraction comes only from the wave field, which only a click disturbs.
   vec2 refr = grad * uRefract;
-  vec3 col = texture(uVideo, clamp(vuv + refr, 0.001, 0.999)).rgb;
-  col = mix(col, uWarm, uScrim);
-  // Wave glow (from a click), driven by slope so it reads as water, not a flash.
-  float energy = min(abs(h) * 0.10 + length(grad) * 5.0, 0.7);
-  col += uBlue * energy * uGlow;
-  // Soft water-blue light that illuminates under the cursor. Screen blend so
-  // it brightens the sand rather than painting over it. Small and gentle.
+  vec3 vid = texture(uVideo, clamp(vuv + refr, 0.001, 0.999)).rgb;
+  vec3 col = mix(vid, uWarm, uScrim);
+  // The film's own caustic "electric lines" (blue-dominant, bright).
+  float caustic = smoothstep(0.03, 0.28, vid.b - (vid.r + vid.g) * 0.42);
+  // Click pulse: a travelling wavefront that energizes those lines electric
+  // blue as it passes, so the electric lines pulse outward (not a clean ring).
+  float wave = min(length(grad) * 9.0, 1.3);
+  col += uBlue * wave * (0.12 + 1.7 * caustic) * uGlow;
+  // Small electric-blue torch that illuminates the sand under the cursor.
   float cd = length((uv - uCursor) * vec2(uAspect, 1.0));
-  float halo = smoothstep(0.11, 0.0, cd);
-  halo = pow(halo, 1.6) * uCursorGlow;
-  col = 1.0 - (1.0 - col) * (1.0 - uBlue * halo);
+  float halo = pow(smoothstep(0.085, 0.0, cd), 1.4) * uCursorGlow;
+  col += uBlue * halo * 0.9;
+  col = mix(col, uBlue * 1.25, halo * 0.45);
   frag = vec4(col, 1.0);
 }`
 
@@ -111,9 +111,11 @@ function program(gl, vsrc, fsrc) {
 }
 
 const WARM = [0.984, 0.98, 0.972]
-// Soft water blue sampled to match the caustic light in the film.
-const BLUE = [0.44, 0.62, 0.9]
+// Electric blue (~#1a7fff).
+const BLUE = [0.1, 0.5, 1.0]
 const GRID_W = 220
+// Activation zone: hover/click only trigger over the sand (lower area, y up).
+const SAND_Y = 0.48
 
 export default function HeroRipple({ sectionRef }) {
   const canvasRef = useRef(null)
@@ -298,7 +300,7 @@ export default function HeroRipple({ sectionRef }) {
       const rect = section.getBoundingClientRect()
       ptr.tx = (e.clientX - rect.left) / rect.width
       ptr.ty = 1 - (e.clientY - rect.top) / rect.height
-      ptr.hovering = true
+      ptr.hovering = ptr.ty < SAND_Y
     }
     const onLeave = () => {
       ptr.hovering = false
@@ -306,9 +308,14 @@ export default function HeroRipple({ sectionRef }) {
     const onDown = (e) => {
       if (e.target && e.target.closest && e.target.closest('a, button')) return
       const rect = section.getBoundingClientRect()
-      ptr.clickX = (e.clientX - rect.left) / rect.width
-      ptr.clickY = 1 - (e.clientY - rect.top) / rect.height
-      ptr.click = 0.85
+      const px = (e.clientX - rect.left) / rect.width
+      const py = 1 - (e.clientY - rect.top) / rect.height
+      // only the sand activates a pulse; it can then travel the whole hero
+      if (py < SAND_Y) {
+        ptr.clickX = px
+        ptr.clickY = py
+        ptr.click = 1.0
+      }
     }
 
     section.addEventListener('pointermove', onMove)
@@ -348,8 +355,8 @@ export default function HeroRipple({ sectionRef }) {
         gl.uniform2f(simU.uGrid, gridW, gridH)
         gl.uniform2f(simU.uPointer, ptr.clickX, ptr.clickY)
         gl.uniform1f(simU.uClick, i === 0 ? ptr.click : 0)
-        // Higher damping keeps the ripple local to where it was clicked.
-        gl.uniform1f(simU.uDamp, 0.975)
+        // Lower damping lets the pulse travel across the whole hero.
+        gl.uniform1f(simU.uDamp, 0.991)
         gl.drawArrays(gl.TRIANGLES, 0, 3)
         cur = 1 - cur
       }
@@ -374,13 +381,13 @@ export default function HeroRipple({ sectionRef }) {
       gl.uniform2f(compU.uTexel, 1 / gridW, 1 / gridH)
       gl.uniform2f(compU.uCoverScale, coverScale[0], coverScale[1])
       gl.uniform2f(compU.uCoverOffset, coverOffset[0], coverOffset[1])
-      gl.uniform1f(compU.uRefract, 0.17)
-      gl.uniform1f(compU.uGlow, 0.42)
+      gl.uniform1f(compU.uRefract, 0.18)
+      gl.uniform1f(compU.uGlow, 0.7)
       gl.uniform1f(compU.uScrim, 0.5)
       gl.uniform3f(compU.uWarm, WARM[0], WARM[1], WARM[2])
       gl.uniform3f(compU.uBlue, BLUE[0], BLUE[1], BLUE[2])
       gl.uniform2f(compU.uCursor, ptr.x, ptr.y)
-      gl.uniform1f(compU.uCursorGlow, ptr.glow * 0.22)
+      gl.uniform1f(compU.uCursorGlow, ptr.glow)
       gl.uniform1f(compU.uAspect, aspect)
       gl.drawArrays(gl.TRIANGLES, 0, 3)
     }
