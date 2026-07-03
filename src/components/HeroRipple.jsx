@@ -29,7 +29,6 @@ uniform vec2 uGrid;
 uniform vec2 uPointer;
 uniform float uClick;
 uniform float uDamp;
-uniform vec2 uMask;
 void main() {
   vec2 uv = vUv;
   vec4 s = texture(uState, uv);
@@ -41,10 +40,9 @@ void main() {
   float d = texture(uState, uv + vec2(0.0, uTexel.y)).r;
   float lap = l + r + u + d - 4.0 * h;
   float hn = (2.0 * h - hp + 0.32 * lap) * uDamp;
-  float mask = 1.0 - smoothstep(uMask.x, uMask.y, uv.y);
   vec2 dcell = (uv - uPointer) * uGrid;
   float dist = length(dcell);
-  hn += uClick * smoothstep(uGrid.x * 0.10, 0.0, dist) * mask;
+  hn += uClick * smoothstep(uGrid.x * 0.06, 0.0, dist);
   hn = clamp(hn, -2.0, 2.0);
   frag = vec4(hn, h, 0.0, 1.0);
 }`
@@ -58,7 +56,6 @@ uniform sampler2D uVideo;
 uniform vec2 uTexel;
 uniform vec2 uCoverScale;
 uniform vec2 uCoverOffset;
-uniform vec2 uMask;
 uniform float uRefract;
 uniform float uGlow;
 uniform float uScrim;
@@ -75,20 +72,20 @@ void main() {
   float hD = texture(uState, uv + vec2(0.0, uTexel.y)).r;
   vec2 grad = vec2(hR - hL, hD - hU);
   float h = texture(uState, uv).r;
-  float mask = 1.0 - smoothstep(uMask.x, uMask.y, uv.y);
   vec2 vuv = uv * uCoverScale + uCoverOffset;
   // Refraction comes only from the wave field, which only a click disturbs.
-  vec2 refr = grad * uRefract * mask;
+  vec2 refr = grad * uRefract;
   vec3 col = texture(uVideo, clamp(vuv + refr, 0.001, 0.999)).rgb;
   col = mix(col, uWarm, uScrim);
-  // Wave glow (from a click), driven by slope so it stays blue not white.
-  float energy = min((abs(h) * 0.15 + length(grad) * 6.0) * mask, 1.0);
+  // Wave glow (from a click), driven by slope so it reads as water, not a flash.
+  float energy = min(abs(h) * 0.10 + length(grad) * 5.0, 0.7);
   col += uBlue * energy * uGlow;
-  // Soft blue light that simply follows the cursor while hovering the sand.
+  // Soft water-blue light that illuminates under the cursor. Screen blend so
+  // it brightens the sand rather than painting over it. Small and gentle.
   float cd = length((uv - uCursor) * vec2(uAspect, 1.0));
-  float halo = smoothstep(0.20, 0.0, cd);
-  halo = halo * halo;
-  col += uBlue * halo * uCursorGlow * mask;
+  float halo = smoothstep(0.11, 0.0, cd);
+  halo = pow(halo, 1.6) * uCursorGlow;
+  col = 1.0 - (1.0 - col) * (1.0 - uBlue * halo);
   frag = vec4(col, 1.0);
 }`
 
@@ -114,9 +111,9 @@ function program(gl, vsrc, fsrc) {
 }
 
 const WARM = [0.984, 0.98, 0.972]
-const BLUE = [0.2, 0.44, 1.0]
+// Soft water blue sampled to match the caustic light in the film.
+const BLUE = [0.44, 0.62, 0.9]
 const GRID_W = 220
-const MASK = [0.36, 0.54] // sand feather in uv.y (0 = bottom)
 
 export default function HeroRipple({ sectionRef }) {
   const canvasRef = useRef(null)
@@ -155,7 +152,7 @@ export default function HeroRipple({ sectionRef }) {
     // glow position, glow = eased hover intensity, click* = last click point.
     const ptr = {
       tx: 0.5, ty: 0.3, x: 0.5, y: 0.3,
-      glow: 0, click: 0, clickX: 0.5, clickY: 0.3, inSand: false,
+      glow: 0, click: 0, clickX: 0.5, clickY: 0.3, hovering: false,
     }
 
     try {
@@ -260,7 +257,6 @@ export default function HeroRipple({ sectionRef }) {
       uPointer: gl.getUniformLocation(simProg, 'uPointer'),
       uClick: gl.getUniformLocation(simProg, 'uClick'),
       uDamp: gl.getUniformLocation(simProg, 'uDamp'),
-      uMask: gl.getUniformLocation(simProg, 'uMask'),
     }
     const compU = {
       uState: gl.getUniformLocation(compProg, 'uState'),
@@ -268,7 +264,6 @@ export default function HeroRipple({ sectionRef }) {
       uTexel: gl.getUniformLocation(compProg, 'uTexel'),
       uCoverScale: gl.getUniformLocation(compProg, 'uCoverScale'),
       uCoverOffset: gl.getUniformLocation(compProg, 'uCoverOffset'),
-      uMask: gl.getUniformLocation(compProg, 'uMask'),
       uRefract: gl.getUniformLocation(compProg, 'uRefract'),
       uGlow: gl.getUniformLocation(compProg, 'uGlow'),
       uScrim: gl.getUniformLocation(compProg, 'uScrim'),
@@ -297,29 +292,23 @@ export default function HeroRipple({ sectionRef }) {
     // click disturbs the wave field.
     const onMove = (e) => {
       if (e.target && e.target.closest && e.target.closest('a, button')) {
-        ptr.inSand = false
+        ptr.hovering = false
         return
       }
       const rect = section.getBoundingClientRect()
-      const px = (e.clientX - rect.left) / rect.width
-      const py = 1 - (e.clientY - rect.top) / rect.height
-      ptr.tx = px
-      ptr.ty = py
-      ptr.inSand = py < MASK[1]
+      ptr.tx = (e.clientX - rect.left) / rect.width
+      ptr.ty = 1 - (e.clientY - rect.top) / rect.height
+      ptr.hovering = true
     }
     const onLeave = () => {
-      ptr.inSand = false
+      ptr.hovering = false
     }
     const onDown = (e) => {
       if (e.target && e.target.closest && e.target.closest('a, button')) return
       const rect = section.getBoundingClientRect()
-      const px = (e.clientX - rect.left) / rect.width
-      const py = 1 - (e.clientY - rect.top) / rect.height
-      if (py < MASK[1]) {
-        ptr.clickX = px
-        ptr.clickY = py
-        ptr.click = 1.2
-      }
+      ptr.clickX = (e.clientX - rect.left) / rect.width
+      ptr.clickY = 1 - (e.clientY - rect.top) / rect.height
+      ptr.click = 0.85
     }
 
     section.addEventListener('pointermove', onMove)
@@ -359,17 +348,17 @@ export default function HeroRipple({ sectionRef }) {
         gl.uniform2f(simU.uGrid, gridW, gridH)
         gl.uniform2f(simU.uPointer, ptr.clickX, ptr.clickY)
         gl.uniform1f(simU.uClick, i === 0 ? ptr.click : 0)
-        gl.uniform1f(simU.uDamp, 0.992)
-        gl.uniform2f(simU.uMask, MASK[0], MASK[1])
+        // Higher damping keeps the ripple local to where it was clicked.
+        gl.uniform1f(simU.uDamp, 0.975)
         gl.drawArrays(gl.TRIANGLES, 0, 3)
         cur = 1 - cur
       }
       ptr.click = 0
       // ease the cursor light: position follows the pointer, intensity fades
-      // in while hovering the sand and out when it leaves.
+      // in while hovering and out when the cursor leaves.
       ptr.x += (ptr.tx - ptr.x) * 0.2
       ptr.y += (ptr.ty - ptr.y) * 0.2
-      ptr.glow += ((ptr.inSand ? 1 : 0) - ptr.glow) * 0.1
+      ptr.glow += ((ptr.hovering ? 1 : 0) - ptr.glow) * 0.1
 
       // composite to screen
       gl.bindFramebuffer(gl.FRAMEBUFFER, null)
@@ -385,14 +374,13 @@ export default function HeroRipple({ sectionRef }) {
       gl.uniform2f(compU.uTexel, 1 / gridW, 1 / gridH)
       gl.uniform2f(compU.uCoverScale, coverScale[0], coverScale[1])
       gl.uniform2f(compU.uCoverOffset, coverOffset[0], coverOffset[1])
-      gl.uniform2f(compU.uMask, MASK[0], MASK[1])
-      gl.uniform1f(compU.uRefract, 0.26)
-      gl.uniform1f(compU.uGlow, 0.8)
+      gl.uniform1f(compU.uRefract, 0.17)
+      gl.uniform1f(compU.uGlow, 0.42)
       gl.uniform1f(compU.uScrim, 0.5)
       gl.uniform3f(compU.uWarm, WARM[0], WARM[1], WARM[2])
       gl.uniform3f(compU.uBlue, BLUE[0], BLUE[1], BLUE[2])
       gl.uniform2f(compU.uCursor, ptr.x, ptr.y)
-      gl.uniform1f(compU.uCursorGlow, ptr.glow * 0.5)
+      gl.uniform1f(compU.uCursorGlow, ptr.glow * 0.22)
       gl.uniform1f(compU.uAspect, aspect)
       gl.drawArrays(gl.TRIANGLES, 0, 3)
     }
