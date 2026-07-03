@@ -1,15 +1,19 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { motion, useScroll, useSpring, useTransform } from 'motion/react'
 import { hero } from '../content/site'
 import { useUnpinned } from '../lib/useUnpinned'
+import { supportsRipple } from '../lib/webglSupport'
 import Atmosphere from './Atmosphere'
 import HeroFilm from './HeroFilm'
+import HeroRipple from './HeroRipple'
 
 const EASE = [0.16, 1, 0.3, 1]
 
 export default function Hero() {
   const ref = useRef(null)
   const { reducedMotion } = useUnpinned()
+  const [rippleOk] = useState(() => supportsRipple())
+  const usingRipple = !reducedMotion && rippleOk
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -31,8 +35,14 @@ export default function Hero() {
         style={reducedMotion ? undefined : { scale: bgScale, y: bgY }}
       >
         <Atmosphere animate={!reducedMotion} />
-        <HeroFilm show={!reducedMotion} />
-        <div className="hero-scrim" />
+        {usingRipple ? (
+          <HeroRipple sectionRef={ref} />
+        ) : (
+          <>
+            {!reducedMotion && <HeroFilm show />}
+            <div className="hero-scrim" />
+          </>
+        )}
       </motion.div>
 
       <motion.div

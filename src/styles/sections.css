@@ -123,6 +123,35 @@
   background: rgba(251, 250, 248, 0.52);
 }
 
+/* Interactive ripple surface (scrim is baked into the shader here). */
+.hero-ripple-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+  transition: opacity 1.4s ease;
+  pointer-events: none;
+}
+
+.hero-ripple-canvas.is-ready {
+  opacity: 1;
+}
+
+/* Hidden source video that feeds the WebGL texture; kept in the DOM and
+   playing (not display:none, which can pause decoding). */
+.hero-ripple-video {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  top: 0;
+  left: 0;
+  opacity: 0.01;
+  pointer-events: none;
+  z-index: -1;
+}
+
 .hero-copy {
   position: relative;
   z-index: 2;
