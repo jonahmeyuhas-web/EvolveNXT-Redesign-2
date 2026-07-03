@@ -4,7 +4,6 @@ import {
   useScroll,
   useSpring,
   useTransform,
-  useMotionTemplate,
   useMotionValueEvent,
 } from 'motion/react'
 import { hero } from '../content/site'
@@ -12,12 +11,9 @@ import { useUnpinned } from '../lib/useUnpinned'
 import Atmosphere from './Atmosphere'
 import HeroFilm from './HeroFilm'
 import HeroFX from './HeroFX'
+import HeroConstellation from './HeroConstellation'
 
 const EASE = [0.16, 1, 0.3, 1]
-// The bright point of the glass to dive into (screen %). Zoom origin and the
-// iris center share this so the reveal reads as diving through the glass.
-const GX = 33
-const GY = 30
 
 export default function Hero() {
   const ref = useRef(null)
@@ -35,24 +31,21 @@ export default function Hero() {
   })
   const p = useSpring(scrollYProgress, { stiffness: 150, damping: 34, restDelta: 0.0004 })
 
-  // headline lifts and fades early, before the dive begins
-  const contentY = useTransform(p, [0, 0.32], ['0vh', '-10vh'])
-  const contentOpacity = useTransform(p, [0.05, 0.32], [1, 0])
-  // the dive: push into the glass
-  const filmScale = useTransform(p, [0.26, 0.92], [1, 2.5])
-  // the iris: white light blooms from the glass, an electric rim leading it
-  const rWhite = useTransform(p, [0.4, 0.9], ['0%', '165%'])
-  const rBlue = useTransform(p, [0.37, 0.86], ['0%', '172%'])
-  const whiteClip = useMotionTemplate`circle(${rWhite} at ${GX}% ${GY}%)`
-  const blueClip = useMotionTemplate`circle(${rBlue} at ${GX}% ${GY}%)`
+  // headline lifts and fades before the strands take over
+  const contentY = useTransform(p, [0, 0.3], ['0vh', '-10vh'])
+  const contentOpacity = useTransform(p, [0.04, 0.28], [1, 0])
+  // deep navy rises over the film (the contained dark moment)
+  const nightOpacity = useTransform(p, [0, 0.22], [0, 0.94])
+  // warm-white resolve fades in at the end and hands off to the statement
+  const resolveOpacity = useTransform(p, [0.82, 0.99], [0, 1])
 
-  // Pause the film during the dive so we scale a static frame (cheap + smooth);
-  // resume if the user scrolls back up into the resting hero.
+  // Pause the film during the sequence (navy covers it); resume when scrolled
+  // back up into the resting hero.
   useMotionValueEvent(p, 'change', (v) => {
     const vid = stickyRef.current && stickyRef.current.querySelector('.hero-film')
     if (!vid) return
-    if (v > 0.26 && !vid.paused) vid.pause()
-    else if (v <= 0.26 && vid.paused) vid.play().catch(() => {})
+    if (v > 0.15 && !vid.paused) vid.pause()
+    else if (v <= 0.15 && vid.paused) vid.play().catch(() => {})
   })
 
   const copy = (
@@ -95,7 +88,7 @@ export default function Hero() {
     </>
   )
 
-  // Fallback (mobile / reduced motion): a plain hero, no dive.
+  // Fallback (mobile / reduced motion): a plain hero, no sequence.
   if (!pinned) {
     return (
       <section className="hero" ref={stickyRef}>
@@ -112,15 +105,16 @@ export default function Hero() {
   return (
     <section ref={ref} className="hero-scene">
       <div className="hero-sticky" ref={stickyRef}>
-        <motion.div
-          className="hero-bg"
-          style={{ scale: filmScale, transformOrigin: `${GX}% ${GY}%` }}
-        >
+        <div className="hero-bg">
           <Atmosphere animate={false} />
           <HeroFilm show />
           <div className="hero-scrim" />
           {usingFX && <HeroFX sectionRef={stickyRef} />}
-        </motion.div>
+        </div>
+
+        <motion.div className="hero-night" style={{ opacity: nightOpacity }} />
+
+        <HeroConstellation progress={p} />
 
         <motion.div
           className="hero-copy"
@@ -129,8 +123,7 @@ export default function Hero() {
           {copy}
         </motion.div>
 
-        <motion.div className="hero-iris hero-iris-blue" style={{ clipPath: blueClip }} />
-        <motion.div className="hero-iris hero-iris-white" style={{ clipPath: whiteClip }} />
+        <motion.div className="hero-resolve" style={{ opacity: resolveOpacity }} />
       </div>
     </section>
   )
