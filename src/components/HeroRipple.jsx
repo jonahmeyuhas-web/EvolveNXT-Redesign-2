@@ -18,6 +18,7 @@ void main() {
 }`
 
 // Damped wave equation on a height field. R = height(t), G = height(t-1).
+// Only a click disturbs it; plain cursor movement never makes waves.
 const SIM = `#version 300 es
 precision highp float;
 in vec2 vUv;
@@ -26,7 +27,6 @@ uniform sampler2D uState;
 uniform vec2 uTexel;
 uniform vec2 uGrid;
 uniform vec2 uPointer;
-uniform float uHover;
 uniform float uClick;
 uniform float uDamp;
 uniform vec2 uMask;
@@ -44,8 +44,7 @@ void main() {
   float mask = 1.0 - smoothstep(uMask.x, uMask.y, uv.y);
   vec2 dcell = (uv - uPointer) * uGrid;
   float dist = length(dcell);
-  hn += uHover * 0.10 * smoothstep(uGrid.x * 0.045, 0.0, dist) * mask;
-  hn += uClick * smoothstep(uGrid.x * 0.11, 0.0, dist) * mask;
+  hn += uClick * smoothstep(uGrid.x * 0.10, 0.0, dist) * mask;
   hn = clamp(hn, -2.0, 2.0);
   frag = vec4(hn, h, 0.0, 1.0);
 }`
@@ -65,6 +64,9 @@ uniform float uGlow;
 uniform float uScrim;
 uniform vec3 uWarm;
 uniform vec3 uBlue;
+uniform vec2 uCursor;
+uniform float uCursorGlow;
+uniform float uAspect;
 void main() {
   vec2 uv = vUv;
   float hL = texture(uState, uv - vec2(uTexel.x, 0.0)).r;
@@ -75,13 +77,18 @@ void main() {
   float h = texture(uState, uv).r;
   float mask = 1.0 - smoothstep(uMask.x, uMask.y, uv.y);
   vec2 vuv = uv * uCoverScale + uCoverOffset;
+  // Refraction comes only from the wave field, which only a click disturbs.
   vec2 refr = grad * uRefract * mask;
   vec3 col = texture(uVideo, clamp(vuv + refr, 0.001, 0.999)).rgb;
   col = mix(col, uWarm, uScrim);
-  // Glow driven mostly by wave slope (the rings) rather than raw height, so
-  // strong clicks read as expanding blue light instead of a white blowout.
-  float energy = min((abs(h) * 0.18 + length(grad) * 7.5) * mask, 1.25);
+  // Wave glow (from a click), driven by slope so it stays blue not white.
+  float energy = min((abs(h) * 0.15 + length(grad) * 6.0) * mask, 1.0);
   col += uBlue * energy * uGlow;
+  // Soft blue light that simply follows the cursor while hovering the sand.
+  float cd = length((uv - uCursor) * vec2(uAspect, 1.0));
+  float halo = smoothstep(0.20, 0.0, cd);
+  halo = halo * halo;
+  col += uBlue * halo * uCursorGlow * mask;
   frag = vec4(col, 1.0);
 }`
 
@@ -142,9 +149,14 @@ export default function HeroRipple({ sectionRef }) {
     let gridH = 124
     let coverScale = [1, 1]
     let coverOffset = [0, 0]
+    let aspect = 1.6
 
-    // pointer state (uv, y up: 1 = top)
-    const ptr = { x: 0.5, y: 0.5, hover: 0, click: 0, inSand: false }
+    // pointer state (uv, y up: 1 = top). tx/ty = raw target, x/y = smoothed
+    // glow position, glow = eased hover intensity, click* = last click point.
+    const ptr = {
+      tx: 0.5, ty: 0.3, x: 0.5, y: 0.3,
+      glow: 0, click: 0, clickX: 0.5, clickY: 0.3, inSand: false,
+    }
 
     try {
       simProg = program(gl, VERT, SIM)
@@ -211,6 +223,7 @@ export default function HeroRipple({ sectionRef }) {
     const computeCover = () => {
       const rect = section.getBoundingClientRect()
       const Ac = rect.width / rect.height
+      aspect = Ac
       const vw = video.videoWidth || 1600
       const vh = video.videoHeight || 895
       const Av = vw / vh
@@ -245,7 +258,6 @@ export default function HeroRipple({ sectionRef }) {
       uTexel: gl.getUniformLocation(simProg, 'uTexel'),
       uGrid: gl.getUniformLocation(simProg, 'uGrid'),
       uPointer: gl.getUniformLocation(simProg, 'uPointer'),
-      uHover: gl.getUniformLocation(simProg, 'uHover'),
       uClick: gl.getUniformLocation(simProg, 'uClick'),
       uDamp: gl.getUniformLocation(simProg, 'uDamp'),
       uMask: gl.getUniformLocation(simProg, 'uMask'),
@@ -262,6 +274,9 @@ export default function HeroRipple({ sectionRef }) {
       uScrim: gl.getUniformLocation(compProg, 'uScrim'),
       uWarm: gl.getUniformLocation(compProg, 'uWarm'),
       uBlue: gl.getUniformLocation(compProg, 'uBlue'),
+      uCursor: gl.getUniformLocation(compProg, 'uCursor'),
+      uCursorGlow: gl.getUniformLocation(compProg, 'uCursorGlow'),
+      uAspect: gl.getUniformLocation(compProg, 'uAspect'),
     }
 
     resize()
@@ -278,31 +293,33 @@ export default function HeroRipple({ sectionRef }) {
     }
     video.addEventListener('loadeddata', onReady, { once: true })
 
-    // pointer -> uv (y up). Only active in the sand region.
+    // pointer -> uv (y up). Hover lights a soft glow in the sand; only a
+    // click disturbs the wave field.
     const onMove = (e) => {
       if (e.target && e.target.closest && e.target.closest('a, button')) {
-        ptr.hover = 0
+        ptr.inSand = false
         return
       }
       const rect = section.getBoundingClientRect()
       const px = (e.clientX - rect.left) / rect.width
-      const pyTop = (e.clientY - rect.top) / rect.height
-      ptr.x = px
-      ptr.y = 1 - pyTop
-      ptr.inSand = ptr.y < MASK[1]
-      ptr.hover = ptr.inSand ? 1 : 0
+      const py = 1 - (e.clientY - rect.top) / rect.height
+      ptr.tx = px
+      ptr.ty = py
+      ptr.inSand = py < MASK[1]
     }
     const onLeave = () => {
-      ptr.hover = 0
+      ptr.inSand = false
     }
     const onDown = (e) => {
       if (e.target && e.target.closest && e.target.closest('a, button')) return
       const rect = section.getBoundingClientRect()
       const px = (e.clientX - rect.left) / rect.width
-      const pyTop = (e.clientY - rect.top) / rect.height
-      ptr.x = px
-      ptr.y = 1 - pyTop
-      if (ptr.y < MASK[1]) ptr.click = 1.9
+      const py = 1 - (e.clientY - rect.top) / rect.height
+      if (py < MASK[1]) {
+        ptr.clickX = px
+        ptr.clickY = py
+        ptr.click = 1.2
+      }
     }
 
     section.addEventListener('pointermove', onMove)
@@ -340,8 +357,7 @@ export default function HeroRipple({ sectionRef }) {
         gl.uniform1i(simU.uState, 0)
         gl.uniform2f(simU.uTexel, 1 / gridW, 1 / gridH)
         gl.uniform2f(simU.uGrid, gridW, gridH)
-        gl.uniform2f(simU.uPointer, ptr.x, ptr.y)
-        gl.uniform1f(simU.uHover, ptr.hover)
+        gl.uniform2f(simU.uPointer, ptr.clickX, ptr.clickY)
         gl.uniform1f(simU.uClick, i === 0 ? ptr.click : 0)
         gl.uniform1f(simU.uDamp, 0.992)
         gl.uniform2f(simU.uMask, MASK[0], MASK[1])
@@ -349,8 +365,11 @@ export default function HeroRipple({ sectionRef }) {
         cur = 1 - cur
       }
       ptr.click = 0
-      // hover only lights up while the cursor is moving; fade when it stops
-      ptr.hover *= 0.86
+      // ease the cursor light: position follows the pointer, intensity fades
+      // in while hovering the sand and out when it leaves.
+      ptr.x += (ptr.tx - ptr.x) * 0.2
+      ptr.y += (ptr.ty - ptr.y) * 0.2
+      ptr.glow += ((ptr.inSand ? 1 : 0) - ptr.glow) * 0.1
 
       // composite to screen
       gl.bindFramebuffer(gl.FRAMEBUFFER, null)
@@ -367,11 +386,14 @@ export default function HeroRipple({ sectionRef }) {
       gl.uniform2f(compU.uCoverScale, coverScale[0], coverScale[1])
       gl.uniform2f(compU.uCoverOffset, coverOffset[0], coverOffset[1])
       gl.uniform2f(compU.uMask, MASK[0], MASK[1])
-      gl.uniform1f(compU.uRefract, 0.42)
-      gl.uniform1f(compU.uGlow, 1.05)
+      gl.uniform1f(compU.uRefract, 0.26)
+      gl.uniform1f(compU.uGlow, 0.8)
       gl.uniform1f(compU.uScrim, 0.5)
       gl.uniform3f(compU.uWarm, WARM[0], WARM[1], WARM[2])
       gl.uniform3f(compU.uBlue, BLUE[0], BLUE[1], BLUE[2])
+      gl.uniform2f(compU.uCursor, ptr.x, ptr.y)
+      gl.uniform1f(compU.uCursorGlow, ptr.glow * 0.5)
+      gl.uniform1f(compU.uAspect, aspect)
       gl.drawArrays(gl.TRIANGLES, 0, 3)
     }
 
