@@ -86,6 +86,41 @@
   justify-content: center;
 }
 
+/* Pinned "through the glass" transition scene */
+.hero-scene {
+  position: relative;
+  height: 220vh;
+}
+
+.hero-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  min-height: 640px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* white light that irises open from the glass, with an electric rim leading */
+.hero-iris {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  will-change: clip-path;
+}
+
+.hero-iris-white {
+  z-index: 5;
+  background: var(--bg);
+}
+
+.hero-iris-blue {
+  z-index: 4;
+  background: #1852e0;
+}
+
 .hero-bg {
   position: absolute;
   inset: -2px;
@@ -93,6 +128,9 @@
   transform-origin: center;
   /* contain the FX canvas blend so it only lights the film, not the page */
   isolation: isolate;
+  /* keep this on its own compositor layer so the dive scales the cached
+     texture instead of re-rasterizing (smooth zoom) */
+  will-change: transform;
 }
 
 .hero-bg .atmosphere,

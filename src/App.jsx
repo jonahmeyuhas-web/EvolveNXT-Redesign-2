@@ -28,10 +28,10 @@ export default function App() {
       <Nav />
       <main>
         <Hero />
-        <ProductShowcase />
         <Statement />
         <Lifecycle />
         <ModulesIndex />
+        <ProductShowcase />
         <LinesOfBusiness />
         <Credibility />
         <CtaBookend />
