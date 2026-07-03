@@ -3,6 +3,7 @@ import { motion, useMotionTemplate, useScroll, useSpring, useTransform } from 'm
 import { hero } from '../content/site'
 import { useUnpinned } from '../lib/useUnpinned'
 import Atmosphere from './Atmosphere'
+import HeroFilm from './HeroFilm'
 
 const EASE = [0.16, 1, 0.3, 1]
 
@@ -83,6 +84,7 @@ export default function Hero() {
             style={pinned ? { y: mediaY, clipPath } : undefined}
           >
             <Atmosphere animate={!reducedMotion} />
+            <HeroFilm show={!reducedMotion} />
             <motion.span
               className="hero-media-caption"
               style={pinned ? { opacity: captionOpacity } : undefined}
