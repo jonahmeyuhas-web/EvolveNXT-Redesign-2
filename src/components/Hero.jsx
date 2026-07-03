@@ -2,18 +2,19 @@ import { useRef, useState } from 'react'
 import { motion, useScroll, useSpring, useTransform } from 'motion/react'
 import { hero } from '../content/site'
 import { useUnpinned } from '../lib/useUnpinned'
-import { supportsRipple } from '../lib/webglSupport'
 import Atmosphere from './Atmosphere'
 import HeroFilm from './HeroFilm'
-import HeroRipple from './HeroRipple'
+import HeroFX from './HeroFX'
 
 const EASE = [0.16, 1, 0.3, 1]
 
 export default function Hero() {
   const ref = useRef(null)
   const { reducedMotion } = useUnpinned()
-  const [rippleOk] = useState(() => supportsRipple())
-  const usingRipple = !reducedMotion && rippleOk
+  const [finePointer] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches,
+  )
+  const usingFX = !reducedMotion && finePointer
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -35,14 +36,9 @@ export default function Hero() {
         style={reducedMotion ? undefined : { scale: bgScale, y: bgY }}
       >
         <Atmosphere animate={!reducedMotion} />
-        {usingRipple ? (
-          <HeroRipple sectionRef={ref} />
-        ) : (
-          <>
-            {!reducedMotion && <HeroFilm show />}
-            <div className="hero-scrim" />
-          </>
-        )}
+        {!reducedMotion && <HeroFilm show />}
+        <div className="hero-scrim" />
+        {usingFX && <HeroFX sectionRef={ref} />}
       </motion.div>
 
       <motion.div
