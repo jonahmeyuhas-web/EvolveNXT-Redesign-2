@@ -22,26 +22,22 @@ export default function Hero() {
   })
   const p = useSpring(scrollYProgress, { stiffness: 140, damping: 30, restDelta: 0.001 })
 
-  // Gentle parallax as the hero leaves: the words lift and fade a little
-  // faster than the film, which settles back a touch. No scroll pin.
+  // Only the words parallax as the hero leaves. The film layer stays static
+  // (no per-scroll transform) so its GPU texture never re-rasterizes while
+  // scrolling and the video keeps playing smoothly.
   const contentY = useTransform(p, [0, 1], ['0vh', '-8vh'])
   const contentOpacity = useTransform(p, [0, 0.7], [1, 0])
-  const bgScale = useTransform(p, [0, 1], [1, 1.08])
-  const bgY = useTransform(p, [0, 1], ['0vh', '4vh'])
 
   return (
     <section ref={ref} className="hero">
-      <motion.div
-        className="hero-bg"
-        style={reducedMotion ? undefined : { scale: bgScale, y: bgY }}
-      >
+      <div className="hero-bg">
         {/* Static: the video covers this once loaded, so it never needs to
             animate. It only shows as a warm fill before the film paints. */}
         <Atmosphere animate={false} />
         {!reducedMotion && <HeroFilm show />}
         <div className="hero-scrim" />
         {usingFX && <HeroFX sectionRef={ref} />}
-      </motion.div>
+      </div>
 
       <motion.div
         className="hero-copy"

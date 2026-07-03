@@ -86,9 +86,9 @@ export default function HeroFX({ sectionRef }) {
       if (bolts.length > 24) bolts.splice(0, bolts.length - 24)
     }
 
-    section.addEventListener('pointermove', onMove)
-    section.addEventListener('pointerleave', onLeave)
-    section.addEventListener('pointerdown', onDown)
+    section.addEventListener('pointermove', onMove, { passive: true })
+    section.addEventListener('pointerleave', onLeave, { passive: true })
+    section.addEventListener('pointerdown', onDown, { passive: true })
 
     let roTimer
     const ro = new ResizeObserver(() => {

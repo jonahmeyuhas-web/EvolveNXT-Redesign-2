@@ -111,6 +111,10 @@
   object-position: 50% 62%;
   opacity: 0;
   transition: opacity 1.4s ease;
+  /* keep the video on its own stable GPU layer so it composites cheaply and
+     plays smoothly, isolated from other repaints */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .hero-bg .hero-film-ready {
