@@ -34,8 +34,22 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: https://jonahmeyuhas-web.github.io/EvolveNXT-Redesign-2/
     steps:
       - uses: actions/configure-pages@v5
-      - id: deployment
+      # actions/deploy-pages intermittently returns "Deployment failed, try
+      # again later" even when Pages is healthy. Retry up to three times so a
+      # transient failure self-heals instead of needing a manual re-push.
+      - id: try1
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+      - if: steps.try1.outcome == 'failure'
+        run: sleep 20
+      - id: try2
+        if: steps.try1.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+      - if: steps.try1.outcome == 'failure' && steps.try2.outcome == 'failure'
+        run: sleep 30
+      - if: steps.try1.outcome == 'failure' && steps.try2.outcome == 'failure'
         uses: actions/deploy-pages@v4
