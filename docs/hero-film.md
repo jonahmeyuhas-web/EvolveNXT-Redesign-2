@@ -36,12 +36,41 @@ approved frame, and the chosen still doubles as the poster image.
 > palette of warm ivory, pale stone, royal blue and deep navy, no people,
 > no text
 
-**Step 2, animate the chosen still (image-to-video, 2 or 3 runs):**
+**Step 2, animate the chosen still (image-to-video, image 3 as first frame,
+2 or 3 runs).** The failure mode in earlier runs was the model non-rigidly
+warping the glass itself, which read as camera shake. This prompt pins every
+physical object as solid and gives the light a specific motion vocabulary so
+only the projected caustics move.
 
-> The blue caustic light patterns drift and shimmer very slowly across the
-> wall, the pool of warm light along the bottom breathes gently, extremely
-> subtle continuous motion of light only, nothing else moves, completely
-> static locked-off camera, no camera movement, calm and silent
+Primary:
+
+> Cinematic macro shot of soft morning sunlight passing through a thick glass
+> pane resting on a travertine stone block, casting a web of rippling blue
+> caustic light across a warm ivory plaster floor. Animate only the light:
+> the bright blue caustic pattern slowly ripples, undulates and shimmers
+> across the plaster like sunlight reflecting off gently moving water, its
+> delicate branching lines drifting and breathing in a slow continuous flow,
+> while the warm glow in the lower left softly pulses. Every physical object
+> stays perfectly still and completely solid: the glass pane, the stone
+> block, the edges and the wall do not move, warp, bend, ripple, or change
+> shape in any way. Locked-off tripod camera, zero camera movement, no zoom,
+> no pan, no tilt, no parallax. Extremely smooth, slow, calm, continuous
+> motion of light only. Serene minimal high-end architectural film, fine
+> natural film grain, muted palette of warm ivory, pale stone, royal blue
+> and deep navy.
+
+Negative:
+
+> camera movement, camera shake, handheld, zoom, pan, tilt, parallax, warping
+> glass, morphing objects, bending edges, distortion, wobbling, rippling
+> glass, changing composition, extra objects, people, faces, hands, text,
+> letters, logos, watermarks, UI, screens, fast motion, strobing, flicker,
+> saturated colors, neon, purple, lens flare
+
+Settings: image 3 as the first/reference frame, motion strength low to
+medium, 8 seconds, highest resolution, Veo 3.1 (Kling 3.0 as the backup to
+compare). If a take warps the glass or drifts the camera, discard it; only
+the light should live.
 
 ## Generation settings
 
