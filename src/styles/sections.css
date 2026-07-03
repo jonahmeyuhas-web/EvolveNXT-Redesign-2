@@ -74,37 +74,61 @@
   font-size: 0.92rem;
 }
 
-/* ============ Hero ============ */
+/* ============ Hero (film behind the headline) ============ */
 
 .hero {
   position: relative;
-}
-
-.hero-pinned {
-  height: 250vh;
-}
-
-.hero-sticky {
-  position: sticky;
-  top: 0;
   height: 100vh;
+  min-height: 640px;
   overflow: hidden;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-.hero:not(.hero-pinned) .hero-sticky {
-  position: static;
-  height: auto;
-  overflow: visible;
-  padding-bottom: 24px;
+.hero-bg {
+  position: absolute;
+  inset: -2px;
+  z-index: 0;
+  transform-origin: center;
+}
+
+.hero-bg .atmosphere,
+.hero-bg .hero-film {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Keep the warm, lower part of the frame behind the words; push the dark
+   navy corner toward the top edge. */
+.hero-bg .hero-film {
+  object-position: 50% 62%;
+  opacity: 0;
+  transition: opacity 1.4s ease;
+}
+
+.hero-bg .hero-film-ready {
+  opacity: 1;
+}
+
+/* Warm scrim lifts the film so the page stays light and near-black type
+   stays crisp over it. */
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(251, 250, 248, 0.52);
 }
 
 .hero-copy {
   position: relative;
   z-index: 2;
   text-align: center;
-  padding: calc(var(--nav-h) + 8vh) var(--pad-x) 0;
+  max-width: 1040px;
+  padding: var(--nav-h) var(--pad-x) 0;
 }
 
 .hero-copy h1 {
@@ -112,83 +136,84 @@
 }
 
 .hero-sub {
-  max-width: 54ch;
+  max-width: 52ch;
   margin: 26px auto 0;
   color: var(--charcoal);
   font-size: clamp(1.02rem, 1.35vw, 1.18rem);
 }
 
 .hero-ctas {
-  margin-top: 34px;
+  margin-top: 36px;
   display: flex;
   gap: 28px;
   align-items: center;
   justify-content: center;
 }
 
-.hero-media-holder {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
+/* ============ Product showcase (reserved) ============ */
+
+.showcase {
+  padding: min(14vh, 150px) 0 min(16vh, 180px);
+  background: var(--bg);
 }
 
-.hero:not(.hero-pinned) .hero-media-holder {
-  position: static;
-  margin-top: 44px;
-  padding-inline: var(--pad-x);
+.showcase-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 40px;
+  margin-bottom: 40px;
 }
 
-.hero-media {
-  position: absolute;
-  top: 10vh;
-  left: 0;
-  right: 0;
-  margin-inline: auto;
-  width: min(92vw, 1560px);
-  height: 88vh;
+.showcase-title {
+  margin-top: 12px;
+  max-width: 20ch;
+}
+
+.showcase-note {
+  color: var(--muted);
+  font-size: 0.96rem;
+  max-width: 34ch;
+  text-align: right;
+}
+
+.showcase-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 8.5;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-media);
+  background: var(--bg-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
 }
 
-.hero:not(.hero-pinned) .hero-media {
+.showcase-frame::after {
+  content: '';
+  position: absolute;
+  inset: 14px;
+  border: 1px dashed var(--rule);
+  border-radius: calc(var(--radius-media) - 8px);
+  pointer-events: none;
+}
+
+.showcase-placeholder {
   position: relative;
-  top: auto;
-  width: 100%;
-  height: 54vh;
-  min-height: 320px;
-  border-radius: var(--radius-media);
-  border: 1px solid rgba(2, 8, 56, 0.07);
+  z-index: 1;
+  text-align: center;
+  color: var(--muted);
 }
 
-.atmosphere {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
+.showcase-placeholder .label {
+  color: var(--charcoal);
 }
 
-.hero-film {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity 1.2s ease;
-}
-
-.hero-film-ready {
-  opacity: 1;
-}
-
-.hero-media-caption {
-  position: absolute;
-  left: 30px;
-  bottom: 24px;
-  z-index: 2;
-  font-size: 0.92rem;
-  font-weight: 480;
-  color: rgba(2, 8, 56, 0.55);
+.showcase-placeholder p {
+  margin-top: 8px;
+  font-size: 0.95rem;
+  max-width: 40ch;
 }
 
 /* ============ Statement ============ */
@@ -630,6 +655,19 @@
 
   .statement-body {
     margin-left: 0;
+  }
+
+  .showcase-head {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .showcase-note {
+    text-align: left;
+  }
+
+  .showcase-frame {
+    aspect-ratio: 4 / 3;
   }
 
   .modules-head {

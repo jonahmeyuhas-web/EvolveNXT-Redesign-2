@@ -3,6 +3,7 @@ import { ReactLenis, useLenis } from 'lenis/react'
 import { useUnpinned } from './lib/useUnpinned'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
+import ProductShowcase from './components/ProductShowcase'
 import Statement from './components/Statement'
 import Lifecycle from './components/Lifecycle'
 import ModulesIndex from './components/ModulesIndex'
@@ -27,6 +28,7 @@ export default function App() {
       <Nav />
       <main>
         <Hero />
+        <ProductShowcase />
         <Statement />
         <Lifecycle />
         <ModulesIndex />
