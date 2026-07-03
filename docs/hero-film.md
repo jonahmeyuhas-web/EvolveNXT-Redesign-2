@@ -18,6 +18,31 @@ is automatic.
 - Absolutely none of: people, faces, hands, text, logos, UI, screens,
   fast motion, flicker, lens-flare streaks.
 
+## Recommended workflow: still first, then animate
+
+Generate a STILL image first, pick the best frame, then animate that frame
+with image-to-video. Stills are cheap to iterate so palette and composition
+get locked before spending video credits, image-to-video preserves the
+approved frame, and the chosen still doubles as the poster image.
+
+**Step 1, image (16:9, generate 4 to 6, keep 1 or 2):**
+
+> Architectural photography, macro view of soft morning daylight refracting
+> through layered architectural glass onto a warm white plaster wall, gentle
+> blue caustic light patterns pooling along the bottom third of the frame, a
+> deep navy shadow falling across the upper right corner, warm ivory glow in
+> the lower left, shallow depth of field with a softly blurred glass edge in
+> the foreground, fine film grain, minimal, calm, premium and quiet, muted
+> palette of warm ivory, pale stone, royal blue and deep navy, no people,
+> no text
+
+**Step 2, animate the chosen still (image-to-video, 2 or 3 runs):**
+
+> The blue caustic light patterns drift and shimmer very slowly across the
+> wall, the pool of warm light along the bottom breathes gently, extremely
+> subtle continuous motion of light only, nothing else moves, completely
+> static locked-off camera, no camera movement, calm and silent
+
 ## Generation settings
 
 - Aspect ratio: 16:9 (the frame crops it via object-fit: cover)
@@ -25,7 +50,8 @@ is automatic.
   in post with a palindrome, so the clip does NOT need to loop on its own
 - Camera: static / locked-off preset; motion strength at the lowest setting
 - Resolution: highest available (1080p minimum)
-- Generate 3 or 4 seeds per prompt; pick against the palette, not the drama
+- Judge candidates against the palette, not the drama: warm base, blue
+  accents, activity in the lower third
 
 ## Prompt A (primary): caustics on plaster
 
