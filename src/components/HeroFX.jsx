@@ -25,13 +25,17 @@ export default function HeroFX({ sectionRef }) {
     let visible = true
     let W = 0
     let H = 0
+    let lastBusy = 0
+    let cleared = true
 
     const ptr = { x: 0.5, y: 0.5, tx: 0.5, ty: 0.5, px: 0.5, py: 0.5, active: false, seen: false }
     const bolts = []
 
     const resize = () => {
       const rect = section.getBoundingClientRect()
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      // The glow/lightning is soft, so a 1x backing store looks the same and
+      // is far cheaper to fill and blend than 2x on retina.
+      const dpr = 1
       W = rect.width
       H = rect.height
       canvas.width = Math.max(2, Math.round(W * dpr))
@@ -39,6 +43,8 @@ export default function HeroFX({ sectionRef }) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     }
     resize()
+    // start hidden so there is no blend cost until the user interacts
+    canvas.hidden = true
 
     const inSand = (yFrac) => yFrac > SAND_Y
 
@@ -129,6 +135,22 @@ export default function HeroFX({ sectionRef }) {
       if (disposed) return
       raf = requestAnimationFrame(step)
       if (!visible || document.visibilityState !== 'visible') return
+
+      // Idle short-circuit: when there is nothing to draw (no hover, no bolts,
+      // trail already faded), clear once and do no per-frame work at all.
+      const now = performance.now()
+      if (ptr.active || bolts.length) lastBusy = now
+      if (now - lastBusy > 480) {
+        if (!cleared) {
+          ctx.clearRect(0, 0, W, H)
+          cleared = true
+          // hide the layer so it stops blending over the playing video too
+          canvas.hidden = true
+        }
+        return
+      }
+      if (cleared) canvas.hidden = false
+      cleared = false
 
       // fade the whole canvas a little each frame -> trails decay
       ctx.globalCompositeOperation = 'destination-out'

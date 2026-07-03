@@ -35,7 +35,9 @@ export default function Hero() {
         className="hero-bg"
         style={reducedMotion ? undefined : { scale: bgScale, y: bgY }}
       >
-        <Atmosphere animate={!reducedMotion} />
+        {/* Static: the video covers this once loaded, so it never needs to
+            animate. It only shows as a warm fill before the film paints. */}
+        <Atmosphere animate={false} />
         {!reducedMotion && <HeroFilm show />}
         <div className="hero-scrim" />
         {usingFX && <HeroFX sectionRef={ref} />}
