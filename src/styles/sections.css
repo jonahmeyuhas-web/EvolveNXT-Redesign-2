@@ -217,6 +217,111 @@
   justify-content: center;
 }
 
+/* ============ Crystal hero (pinned 3D) ============ */
+
+/* Tall spacer that gives the pinned canvas its scroll travel (430vh; the
+   last ~66vh belong to THE DOCK). The Statement section overlaps the final
+   viewport (see .statement-dock). Ported from the approved prototype. */
+.crystal-track {
+  position: relative;
+  width: 100%;
+  height: 430vh;
+}
+
+/* Fixed full-viewport canvas layer, pinned behind the scroll track. Never
+   captures pointer events, so the page scrolls normally and the docked mark
+   stays live behind the statement text. */
+.crystal-pin {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Poster still shown immediately at first paint; the live canvas cross-fades
+   over it once its first frame is drawn. Both flat fills, no gradient. */
+.crystal-poster {
+  position: absolute;
+  inset: 0;
+  background-color: var(--bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.crystal-poster-fixed,
+.crystal-canvas {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.6s ease;
+}
+
+.crystal-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.crystal-canvas canvas {
+  display: block;
+}
+
+/* Real hero copy over the scene; lifts away with blur + fade in Act 1
+   (driven from the site's Lenis in HeroCrystal). */
+.crystal-headline {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  will-change: opacity, transform, filter;
+}
+
+/* Re-enable interaction on the copy itself (the overlay is click-through). */
+.crystal-headline .hero-copy {
+  pointer-events: auto;
+}
+
+.crystal-hint {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 2.2rem;
+  z-index: 1;
+  text-align: center;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--charcoal);
+  opacity: 0.4;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+/* Static poster hero (fallback: small viewport / reduced motion / no WebGL). */
+.crystal-poster-hero {
+  background: var(--bg);
+}
+
+.crystal-poster-hero .crystal-poster {
+  z-index: 0;
+}
+
+/* Flat warm scrim (no gradient); same intent as the site's .hero-scrim. */
+.crystal-poster-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(251, 250, 248, 0.55);
+  pointer-events: none;
+}
+
+.crystal-poster-hero .hero-copy {
+  z-index: 2;
+}
+
 /* ============ Product showcase (reserved) ============ */
 
 .showcase {
@@ -296,6 +401,56 @@
   color: var(--charcoal);
   font-size: clamp(1.02rem, 1.3vw, 1.16rem);
   margin-left: 34%;
+}
+
+/* Crystal dock target. The statement overlaps the final viewport of the
+   crystal track (margin-top: -100vh) so it rises in beneath the descending
+   crystal during THE DOCK, and its background is transparent so the fixed
+   canvas (and the docked living mark) shows through over the identical
+   warm-white page void. The crystal lands centered on .mark-anchor with the
+   statement copy reading directly below it (centered stack), then the page
+   continues normally into Lifecycle. z-index sits above the pinned canvas so
+   the text is legible; pointer events pass through the canvas underneath. */
+.statement-dock {
+  position: relative;
+  z-index: 3;
+  min-height: 100vh;
+  margin-top: -100vh;
+  background: transparent;
+  padding-top: 0;
+  padding-bottom: min(17vh, 190px);
+}
+
+.statement-dock .statement-inner {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  /* Push the stack down so the mark anchor lands just below the viewport's
+     vertical center: the hero pose sits at screen center and the crystal
+     descends straight down into this anchor. */
+  padding-top: 37vh;
+}
+
+/* The dock slot: an empty anchor at the panel's visual center. The 3D mark
+   seats into this rect (its center is unprojected in the final beat of the
+   descent for pixel-accurate centering). The statement copy sits below it. */
+.statement-dock .mark-anchor {
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 2.4rem;
+}
+
+.statement-dock .statement-lines {
+  text-align: center;
+}
+
+.statement-dock .statement-body {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
 }
 
 /* ============ Lifecycle (pinned) ============ */
