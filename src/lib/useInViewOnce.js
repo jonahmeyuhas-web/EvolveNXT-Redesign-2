@@ -16,7 +16,13 @@ export function useInViewOnce(margin = '-10% 0px') {
     }
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        // Reveal when the element intersects, OR when it has already been
+        // carried above the viewport top. A fast scroll can enter and leave
+        // an element between two observer samples; the single batched callback
+        // then reports only the final, non-intersecting state, which would
+        // otherwise leave the text stuck hidden. Checking boundingClientRect
+        // catches that fly-past (and elements already scrolled past on load).
+        if (entry.isIntersecting || entry.boundingClientRect.top < 0) {
           setInView(true)
           io.disconnect()
         }

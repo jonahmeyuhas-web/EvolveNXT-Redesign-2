@@ -64,13 +64,16 @@ function Stage({ stage, i, n, p }) {
   const first = i === 0
   const last = i === n - 1
 
+  // Center each fade on the stage boundary so consecutive stages cross-fade
+  // through it (both ~0.5 at the seam) instead of both hitting 0 at the same
+  // point, which flashed an all-blank gap when scrolling either direction.
   const opacity = useTransform(
     p,
     first
-      ? [0, end - fade, end]
+      ? [0, end - fade, end + fade]
       : last
-        ? [start, start + fade, 1]
-        : [start, start + fade, end - fade, end],
+        ? [start - fade, start + fade, 1]
+        : [start - fade, start + fade, end - fade, end + fade],
     first ? [1, 1, 0] : last ? [0, 1, 1] : [0, 1, 1, 0],
   )
   const y = useTransform(p, [start, end], first ? [0, -36] : [42, -36])

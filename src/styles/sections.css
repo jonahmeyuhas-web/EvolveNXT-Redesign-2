@@ -86,62 +86,10 @@
   justify-content: center;
 }
 
-/* Pinned "caustic constellation" hero sequence */
-.hero-scene {
-  position: relative;
-  height: 260vh;
-}
-
-.hero-sticky {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  min-height: 640px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* deep navy backdrop that rises over the film during the sequence (contained
-   dark moment); the strands glow on it */
-.hero-night {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background: #020838;
-}
-
-/* electric-blue light strands (transparent canvas, additive over the navy) */
-.hero-constellation {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-/* warm-white resolve that fades in at the end and hands off to the statement */
-.hero-resolve {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  pointer-events: none;
-  background: var(--bg);
-}
-
 .hero-bg {
   position: absolute;
   inset: -2px;
   z-index: 0;
-  transform-origin: center;
-  /* contain the FX canvas blend so it only lights the film, not the page */
-  isolation: isolate;
-  /* keep this on its own compositor layer so the dive scales the cached
-     texture instead of re-rasterizing (smooth zoom) */
-  will-change: transform;
 }
 
 .hero-bg .atmosphere,
@@ -176,18 +124,6 @@
   position: absolute;
   inset: 0;
   background: rgba(251, 250, 248, 0.52);
-}
-
-/* Interactive FX overlay: torch trail + lightning bolts. Screen-blends so it
-   illuminates the film instead of covering it. */
-.hero-fx {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  pointer-events: none;
-  mix-blend-mode: screen;
 }
 
 .hero-copy {
