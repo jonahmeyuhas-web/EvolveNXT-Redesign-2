@@ -469,17 +469,49 @@ export default function LivingConsole() {
     }
     window.addEventListener('resize', onResize)
 
+    // Do not run on load. The demo boots only when the console scrolls into
+    // view (past ~60% of the viewport, matching the hero film) and
+    // pauses/resumes as it leaves/re-enters. Fonts must be ready first so the
+    // cursor target geometry measures correctly.
+    let started = false
+    let fontsReady = false
+    let inView = false
     let bootTimer
+    const tryBoot = () => {
+      if (!fontsReady || !inView) return
+      if (started) {
+        engine.play()
+        return
+      }
+      started = true
+      startEngine()
+    }
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => {
-        bootTimer = setTimeout(startEngine, 80)
+        fontsReady = true
+        bootTimer = setTimeout(tryBoot, 80)
       })
     } else {
-      bootTimer = setTimeout(startEngine, 300)
+      fontsReady = true
     }
+    const startIO = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          inView = true
+          tryBoot()
+        } else {
+          inView = false
+          if (started) engine.pause()
+        }
+      },
+      { rootMargin: '0px 0px -40% 0px', threshold: 0 },
+    )
+    const startTarget = q('#console')
+    if (startTarget) startIO.observe(startTarget)
 
     return () => {
       engine.pause()
+      startIO.disconnect()
       clearTimeout(bootTimer)
       clearTimeout(rsz)
       window.removeEventListener('scroll', onScroll)
