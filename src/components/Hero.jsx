@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { hero } from '../content/site'
 import heroPoster from '../assets/hero-poster.jpg'
 import heroLoop from '../assets/hero-loop.mp4'
@@ -8,6 +9,26 @@ import LivingConsole from './LivingConsole'
 // scale/opacity, film settle, console focus-in + recede) is wired in
 // useHomepageMotion.
 export default function Hero() {
+  const videoRef = useRef(null)
+
+  // Start the film only when the panel is scrolled into view; pause it when it
+  // leaves. Honors reduced motion by leaving the poster frame in place.
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) video.play().catch(() => {})
+        else video.pause()
+      },
+      { threshold: 0.4 },
+    )
+    io.observe(video)
+    return () => io.disconnect()
+  }, [])
+
   return (
     <>
       <section className="hero">
@@ -35,10 +56,10 @@ export default function Hero() {
         <div className="panel">
           <div className="panel-media" aria-hidden="true">
             <video
+              ref={videoRef}
               className="panel-photo film"
               muted
               loop
-              autoPlay
               playsInline
               preload="auto"
               poster={heroPoster}
