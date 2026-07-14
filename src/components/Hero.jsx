@@ -18,12 +18,15 @@ export default function Hero() {
     if (!video) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
+    // Negative bottom margin means the video only counts as "in view" once its
+    // top edge scrolls up past ~60% of the viewport, so the panel peeking in at
+    // the bottom on load does NOT start it - you have to scroll down to it.
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) video.play().catch(() => {})
         else video.pause()
       },
-      { threshold: 0.4 },
+      { rootMargin: '0px 0px -40% 0px', threshold: 0 },
     )
     io.observe(video)
     return () => io.disconnect()
