@@ -1,61 +1,58 @@
-import { motion } from 'motion/react'
 import { hero } from '../content/site'
-import { useUnpinned } from '../lib/useUnpinned'
-import Atmosphere from './Atmosphere'
-import HeroFilm from './HeroFilm'
+import heroPoster from '../assets/hero-poster.jpg'
+import heroLoop from '../assets/hero-loop.mp4'
+import LivingConsole from './LivingConsole'
 
-const EASE = [0.16, 1, 0.3, 1]
-
-// Plain 100vh hero: the atmosphere canvas base, the filmed loop over it, a warm
-// scrim, and the headline / sub / CTAs. Copy still reveals on load; there is no
-// scroll-driven sequence.
+// Hero: masked-line headline + sub + CTAs (load-time reveal), then the royal
+// film panel that holds the living console. The Push-to-Focus dolly (headline
+// scale/opacity, film settle, console focus-in + recede) is wired in
+// useHomepageMotion.
 export default function Hero() {
-  const { reducedMotion } = useUnpinned()
-
   return (
-    <section className="hero">
-      <div className="hero-bg">
-        <Atmosphere animate={false} />
-        {!reducedMotion && <HeroFilm show />}
-        <div className="hero-scrim" />
-      </div>
-      <div className="hero-copy">
-        <h1 className="h-display">
-          {hero.headline.map((line, i) => (
-            <span className="mask" key={line}>
-              <motion.span
-                className="mask-line"
-                initial={reducedMotion ? false : { y: 110 }}
-                animate={{ y: 0 }}
-                transition={{ duration: 0.9, ease: EASE, delay: 0.12 + i * 0.09 }}
-              >
-                {line}
-              </motion.span>
-            </span>
-          ))}
-        </h1>
-        <motion.p
-          className="hero-sub"
-          initial={reducedMotion ? false : { opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: EASE, delay: 0.55 }}
-        >
-          {hero.sub}
-        </motion.p>
-        <motion.div
-          className="hero-ctas"
-          initial={reducedMotion ? false : { opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: EASE, delay: 0.68 }}
-        >
-          <a className="pill pill-royal" href={hero.cta.href}>
-            {hero.cta.label}
-          </a>
-          <a className="quiet-link" href={hero.secondary.href}>
-            {hero.secondary.label}
-          </a>
-        </motion.div>
-      </div>
-    </section>
+    <>
+      <section className="hero">
+        <div className="hero-inner">
+          <h1>
+            {hero.headline.map((line) => (
+              <span className="mask" key={line}>
+                <span className="mask-line">{line}</span>
+              </span>
+            ))}
+          </h1>
+          <p className="hero-sub">{hero.sub}</p>
+          <div className="hero-ctas">
+            <a className="pill pill-royal" href={hero.cta.href}>
+              {hero.cta.label}
+            </a>
+            <a className="quiet-link" href={hero.secondary.href}>
+              {hero.secondary.label} <span className="arrow">&#8594;</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section className="panel-section">
+        <div className="panel">
+          <div className="panel-media" aria-hidden="true">
+            <video
+              className="panel-photo film"
+              muted
+              loop
+              autoPlay
+              playsInline
+              preload="auto"
+              poster={heroPoster}
+            >
+              <source src={heroLoop} type="video/mp4" />
+            </video>
+            <div className="tint-color"></div>
+            <div className="tint-deep"></div>
+            <div className="tint-lift"></div>
+          </div>
+
+          <LivingConsole />
+        </div>
+      </section>
+    </>
   )
 }

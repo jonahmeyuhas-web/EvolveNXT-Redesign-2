@@ -24,6 +24,26 @@ export const hero = {
   mediaCaption: 'Onboarding · Compensation · Enrollment · Portal · Leads · CRM',
 }
 
+// Proof strip: three positioning claims from the approved homepage mock.
+export const proof = [
+  { num: '01', claim: 'Rooted in carrier experience', support: 'Built by carriers, for carriers.' },
+  { num: '02', claim: 'Built AI-first', support: 'Modern, enterprise-grade technology for insurance carriers.' },
+  { num: '03', claim: 'One platform, every stage', support: 'Across the entire producer lifecycle.' },
+]
+
+// Placeholder client wordmarks, client-authorized (real logos to follow).
+export const clientLogos = [
+  { label: 'Atlas Health', cls: 'lgm-caps' },
+  { label: 'Meridian Life', cls: 'lgm-light' },
+  { label: 'Cornerstone P&C', cls: 'lgm-wide' },
+  { label: 'beaconmutual', cls: 'lgm-bold' },
+  { label: 'Northstar Annuity', cls: 'lgm-caps' },
+  { label: 'Harborline', cls: 'lgm-mark' },
+  { label: 'Summit Assurance', cls: 'lgm-wide' },
+  { label: 'Bluefield Group', cls: 'lgm-light' },
+  { label: 'PACIFICA RE', cls: 'lgm-bold' },
+]
+
 // Source: evolvenxt.com/about/
 export const statement = {
   lines: ['Built by carriers,', 'for carriers.'],

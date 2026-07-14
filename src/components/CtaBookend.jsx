@@ -1,27 +1,46 @@
-import { motion } from 'motion/react'
 import { cta } from '../content/site'
-import { useInViewOnce } from '../lib/useInViewOnce'
+import heroPoster from '../assets/hero-poster.jpg'
+import heroLoop from '../assets/hero-loop.mp4'
 
-const EASE = [0.16, 1, 0.3, 1]
-
+// CTA bookend: the second royal film panel. The film is present and STATIC (no
+// clip, scale or zoom on entry); only the content cascades in via the shared
+// .ri masked rise. The film is lazy (armed on reveal in useHomepageMotion).
 export default function CtaBookend() {
-  const [ref, inView] = useInViewOnce('-10% 0px')
-
   return (
-    <section className="cta" ref={ref}>
-      <motion.div
-        className="cta-surface"
-        initial={{ opacity: 0, y: 40 }}
-        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-        transition={{ duration: 0.9, ease: EASE }}
-      >
-        <span className="label cta-label">{cta.label}</span>
-        <h2 className="h-lg cta-headline">{cta.headline}</h2>
-        <p className="cta-body">{cta.body}</p>
-        <a className="pill pill-light" href={cta.button.href}>
-          {cta.button.label}
-        </a>
-      </motion.div>
+    <section className="cta-sec">
+      <div className="cta-panel rv">
+        <div className="panel-media" aria-hidden="true">
+          <video
+            className="panel-photo film"
+            data-lazy="1"
+            muted
+            loop
+            playsInline
+            preload="none"
+            poster={heroPoster}
+          >
+            <source src={heroLoop} type="video/mp4" />
+          </video>
+          <div className="tint-color"></div>
+          <div className="tint-deep"></div>
+          <div className="tint-lift"></div>
+          <div className="ov-settle"></div>
+        </div>
+        <div className="cta-content">
+          <span className="cta-label ri" style={{ '--d': '0.1s' }}>
+            {cta.label}
+          </span>
+          <h2 className="cta-headline ri" style={{ '--d': '0.18s' }}>
+            {cta.headline}
+          </h2>
+          <p className="cta-body ri" style={{ '--d': '0.26s' }}>
+            {cta.body}
+          </p>
+          <a className="pill pill-white ri" style={{ '--d': '0.34s' }} href={cta.button.href}>
+            {cta.button.label}
+          </a>
+        </div>
+      </div>
     </section>
   )
 }

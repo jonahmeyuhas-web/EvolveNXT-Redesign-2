@@ -12,6 +12,20 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Gate the reveal system: hiding is applied only under .motion, so
+      // reduced-motion (and any pre-hydration state) renders everything
+      // visible. Matches the approved mock.
+      (function () {
+        var d = document.documentElement
+        d.className += ' js'
+        try {
+          if (!matchMedia('(prefers-reduced-motion: reduce)').matches) d.className += ' motion'
+        } catch (e) {
+          d.className += ' motion'
+        }
+      })()
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

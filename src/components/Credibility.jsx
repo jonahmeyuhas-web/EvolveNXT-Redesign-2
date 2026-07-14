@@ -1,35 +1,39 @@
-import { motion } from 'motion/react'
-import { credibility } from '../content/site'
-import { useInViewOnce } from '../lib/useInViewOnce'
+import { credibility, clientLogos } from '../content/site'
 
-const EASE = [0.16, 1, 0.3, 1]
+// Credibility strip: positioning line, factual chips, and the drifting
+// placeholder client wordmarks (mask-faded edges). Triggered .ri reveal.
+function LogoSet({ hidden }) {
+  return (
+    <span className="lg-set" aria-hidden={hidden ? 'true' : undefined}>
+      {clientLogos.map((l) => (
+        <span className={`lgm ${l.cls}`} key={l.label}>
+          {l.label}
+        </span>
+      ))}
+    </span>
+  )
+}
 
 export default function Credibility() {
-  const [ref, inView] = useInViewOnce('-12% 0px')
-
   return (
-    <section className="credibility">
-      <div className="container" ref={ref}>
-        <motion.h2
-          className="credibility-line"
-          initial={{ opacity: 0, y: 24 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-          transition={{ duration: 0.8, ease: EASE }}
-        >
+    <section className="cred rv">
+      <div className="container">
+        <p className="cred-line ri" style={{ '--d': '0s' }}>
           {credibility.line}
-        </motion.h2>
-        <div className="credibility-facts">
+        </p>
+        <div className="cred-facts ri" style={{ '--d': '0.14s' }}>
           {credibility.facts.map((fact, i) => (
-            <motion.span
-              className="credibility-fact"
-              key={fact}
-              initial={{ opacity: 0, y: 16 }}
-              animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-              transition={{ duration: 0.6, ease: EASE, delay: 0.15 + i * 0.08 }}
-            >
-              {fact}
-            </motion.span>
+            <span key={fact} style={{ display: 'contents' }}>
+              {i > 0 && <span className="mid">&middot;</span>}
+              <span>{fact}</span>
+            </span>
           ))}
+        </div>
+        <div className="logos ri" style={{ '--d': '0.26s' }} aria-label="Client wordmarks, placeholders">
+          <div className="logos-track">
+            <LogoSet />
+            <LogoSet hidden />
+          </div>
         </div>
       </div>
     </section>

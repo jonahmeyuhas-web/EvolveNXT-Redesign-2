@@ -1,0 +1,488 @@
+/* Living console styles ported from the console prototype
+   (scratchpad/mocks2/console/index.html). Scoped to the console subtree so
+   its local tokens (muted/dim/hair etc.) never leak into the page. The
+   prototype's own .frame/.panel/.blend/video wrappers are dropped: the real
+   hero film panel provides the film; only the depth layer + console remain. */
+
+.console {
+  /* Console-local tokens (from the prototype :root). navy/royal match the
+     global tokens; the rest are console-only. */
+  --royal-soft: rgba(27, 76, 193, 0.08);
+  --ok: #1a7f4e;
+  --warm: #b45309;
+  --dim: rgba(2, 8, 56, 0.45);
+  --c-muted: rgba(2, 8, 56, 0.6);
+  --hair: rgba(2, 8, 56, 0.08);
+  --c-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  position: relative;
+  z-index: 2;
+  width: min(940px, 100%);
+  margin-inline: auto;
+  background: #fff;
+  border-radius: 12px;
+  color: var(--navy);
+  box-shadow:
+    0 1px 2px rgba(2, 6, 40, 0.1),
+    0 8px 18px rgba(2, 6, 40, 0.16),
+    0 28px 60px rgba(2, 6, 40, 0.3),
+    0 64px 130px rgba(2, 6, 40, 0.32);
+  overflow: hidden;
+}
+
+/* Depth composition: blurred sibling console fragments float behind the main
+   window at different depths. Skeleton bars only, no words, no data. Present
+   at rest from first paint; drift is compositor-only. */
+.depth-set {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.dwrap {
+  position: absolute;
+  will-change: transform;
+}
+.dwrap.a {
+  left: calc(50% - 618px);
+  top: 64px;
+}
+.dwrap.b {
+  right: calc(50% - 622px);
+  bottom: 52px;
+}
+/* transparency lives in the rgba background, NOT element opacity: some
+   compositors drop layers combining element opacity with filter blur. */
+.dcard {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 26px 64px rgba(2, 6, 40, 0.32);
+}
+.dcard.a {
+  width: 252px;
+  height: 332px;
+  padding: 22px;
+  background: rgba(255, 255, 255, 0.92);
+  filter: blur(6px);
+  animation: driftA 17s ease-in-out infinite alternate;
+}
+.dcard.b {
+  width: 430px;
+  height: 264px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.76);
+  filter: blur(9px);
+  animation: driftB 23s ease-in-out infinite alternate;
+}
+@keyframes driftA {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-9px, -16px, 0);
+  }
+}
+@keyframes driftB {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(11px, 14px, 0);
+  }
+}
+.sk {
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(2, 8, 56, 0.12);
+  margin-top: 16px;
+}
+.sk.head {
+  height: 14px;
+  margin-top: 0;
+  background: rgba(2, 8, 56, 0.18);
+}
+.sk.royal {
+  background: rgba(27, 76, 193, 0.42);
+}
+.sk.w35 {
+  width: 35%;
+}
+.sk.w45 {
+  width: 45%;
+}
+.sk.w55 {
+  width: 55%;
+}
+.sk.w70 {
+  width: 70%;
+}
+.sk.w85 {
+  width: 85%;
+}
+
+.console .chrome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px 12px 20px;
+  border-bottom: 1px solid var(--hair);
+}
+.console .lead {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+.console .win {
+  display: inline-flex;
+  gap: 7px;
+}
+.console .win i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(2, 8, 56, 0.13);
+}
+.console .sep {
+  width: 1px;
+  height: 16px;
+  background: var(--hair);
+}
+.console .brand {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.console .brand span {
+  color: var(--royal);
+}
+.console .tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.console .glass {
+  display: block;
+  color: rgba(2, 8, 56, 0.35);
+}
+.console .avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--royal-soft);
+  border: 1px solid rgba(27, 76, 193, 0.22);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(27, 76, 193, 0.65);
+}
+.ask {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(27, 76, 193, 0.3);
+  border-radius: 999px;
+  padding: 8px 15px;
+  font-size: 12.5px;
+  color: var(--royal);
+  font-weight: 520;
+  width: 116px;
+  transition: box-shadow 0.35s var(--c-ease);
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: default;
+  will-change: width;
+}
+.ask .q {
+  color: var(--navy);
+  font-weight: 460;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.ask .caret {
+  display: none;
+  width: 1px;
+  align-self: stretch;
+  background: var(--royal);
+  animation: blink 0.85s step-end infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+.console.asking .ask {
+  box-shadow: 0 0 0 3px var(--royal-soft);
+}
+.console.asking .ask .q {
+  opacity: 1;
+}
+.console.asking .ask .caret {
+  display: block;
+}
+
+.console .body {
+  display: grid;
+  grid-template-columns: 208px 1fr;
+  min-height: 430px;
+}
+.rail {
+  border-right: 1px solid var(--hair);
+  padding: 12px 10px;
+}
+.rail button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 9px 12px;
+  margin-top: 2px;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--c-muted);
+  font-weight: 470;
+  cursor: default;
+  position: relative;
+  transition:
+    color 0.3s var(--c-ease),
+    background 0.3s var(--c-ease);
+}
+.rail button:first-child {
+  margin-top: 0;
+}
+.rail button.on {
+  color: var(--navy);
+  font-weight: 580;
+  background: var(--royal-soft);
+}
+.rail button.on::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--royal);
+  animation: grow 0.35s var(--c-ease);
+}
+@keyframes grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.stage {
+  position: relative;
+}
+.scene {
+  position: absolute;
+  inset: 0;
+  padding: 20px 26px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s var(--c-ease);
+}
+.scene.on {
+  opacity: 1;
+}
+.scene h2 {
+  font-size: 16px;
+  font-weight: 580;
+  letter-spacing: -0.015em;
+}
+.scene .hint {
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: var(--dim);
+}
+
+.rows {
+  margin-top: 18px;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 6px;
+  border-bottom: 1px solid var(--hair);
+  font-size: 14px;
+  transition:
+    background 0.35s var(--c-ease),
+    box-shadow 0.35s var(--c-ease),
+    opacity 0.4s var(--c-ease),
+    transform 0.4s var(--c-ease);
+}
+.row:last-child {
+  border-bottom: 0;
+}
+.row .name {
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+.row.hot {
+  background: var(--royal-soft);
+  box-shadow: inset 2px 0 0 var(--royal);
+}
+.row.hot .name {
+  color: var(--royal);
+}
+
+/* rows cascade every time a scene enters */
+.scene .row {
+  opacity: 0;
+  transform: translateY(7px);
+}
+.scene.on .row {
+  opacity: 1;
+  transform: none;
+}
+.scene.on .row:nth-child(1) {
+  transition-delay: 0.05s;
+}
+.scene.on .row:nth-child(2) {
+  transition-delay: 0.1s;
+}
+.scene.on .row:nth-child(3) {
+  transition-delay: 0.15s;
+}
+.scene.on .row:nth-child(4) {
+  transition-delay: 0.2s;
+}
+.scene:not(.on) .row {
+  transition-delay: 0s;
+  transition-duration: 0.15s;
+}
+
+.st {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--c-muted);
+  font-weight: 500;
+}
+.st i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dim);
+  transition: background 0.4s var(--c-ease);
+  flex: none;
+}
+.st.ok i {
+  background: var(--ok);
+}
+.st.warm i {
+  background: var(--warm);
+}
+.st.royal i {
+  background: var(--royal);
+}
+.st .w {
+  position: relative;
+  display: inline-block;
+  min-width: 86px;
+  text-align: right;
+}
+.st .w b {
+  font-weight: 500;
+  display: inline-block;
+  transition:
+    opacity 0.25s var(--c-ease),
+    transform 0.25s var(--c-ease);
+}
+.st .w .next {
+  position: absolute;
+  inset: 0;
+  text-align: right;
+  opacity: 0;
+  transform: translateY(5px);
+  transition:
+    opacity 0.3s var(--c-ease) 0.08s,
+    transform 0.3s var(--c-ease) 0.08s;
+}
+.st.flip .w b {
+  opacity: 0;
+  transform: translateY(-5px);
+}
+.st.flip .w .next {
+  opacity: 1;
+  transform: none;
+}
+
+.prog {
+  position: relative;
+  height: 2px;
+  background: rgba(2, 8, 56, 0.08);
+  margin-top: 14px;
+  overflow: hidden;
+}
+.prog .bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  background: var(--royal);
+  transform: scaleX(0);
+  transform-origin: left center;
+  will-change: transform;
+}
+.prog.done {
+  opacity: 0;
+  transition: opacity 0.45s var(--c-ease) 0.25s;
+}
+
+/* Ghost cursor: position, press-dip scale and ring bloom are driven by the
+   master rAF timeline (transform/opacity only). Only opacity fade-in is CSS. */
+.ghost {
+  position: absolute;
+  z-index: 5;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(2, 8, 56, 0.7);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
+  left: 0;
+  top: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s var(--c-ease);
+  will-change: transform;
+}
+.ghost.show {
+  opacity: 1;
+}
+.ghost .ring {
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  border: 1.5px solid var(--royal);
+  opacity: 0;
+  transform: scale(0.45);
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ghost {
+    display: none;
+  }
+  .scene,
+  .scene .row {
+    transition: none;
+  }
+  .scene .row {
+    opacity: 1;
+    transform: none;
+  }
+  .dcard.a,
+  .dcard.b {
+    animation: none;
+  }
+}

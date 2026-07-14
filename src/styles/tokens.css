@@ -15,6 +15,13 @@
   --royal: #1b4cc1;
   --royal-deep: #163fa3;
 
+  /* Accent seasoning (from the hero film): warm caustic amber and the
+     light's cool periwinkle side. Royal stays dominant. */
+  --gold: #c98a2b;
+  --gold-deep: #8a5f16;
+  --sky: #7fa4ff;
+  --sky-deep: #3f66c4;
+
   /* Rules */
   --rule: #e6e2d9;
   --rule-mist: #d9dee6;

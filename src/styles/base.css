@@ -92,74 +92,8 @@ h3 {
   letter-spacing: 0.005em;
 }
 
-/* Buttons and links */
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  border-radius: 999px;
-  padding: 0.85em 1.65em;
-  font-size: 0.98rem;
-  font-weight: 500;
-  line-height: 1;
-  transition:
-    background-color 0.25s ease,
-    color 0.25s ease;
-  white-space: nowrap;
-}
-
-.pill-royal {
-  background: var(--royal);
-  color: #fff;
-}
-
-.pill-royal:hover {
-  background: var(--royal-deep);
-}
-
-.pill-light {
-  background: var(--bg);
-  color: var(--navy);
-}
-
-.pill-light:hover {
-  background: #ffffff;
-}
-
-.text-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--royal);
-  font-weight: 500;
-  font-size: 0.98rem;
-}
-
-.text-link::after {
-  content: '\2192';
-  transition: transform 0.25s var(--ease-out);
-}
-
-.text-link:hover::after {
-  transform: translateX(4px);
-}
-
-.quiet-link {
-  color: var(--charcoal);
-  font-weight: 500;
-  border-bottom: 1px solid var(--rule);
-  padding-bottom: 2px;
-  transition:
-    color 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.quiet-link:hover {
-  color: var(--ink);
-  border-color: var(--charcoal);
-}
+/* Buttons, links and pills are owned by homepage.css (ported from the
+   approved mock) so they match the prototype exactly. */
 
 /* Layout */
 

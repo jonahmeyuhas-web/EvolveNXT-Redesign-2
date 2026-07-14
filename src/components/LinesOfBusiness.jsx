@@ -1,47 +1,31 @@
-import { motion } from 'motion/react'
 import { lob } from '../content/site'
-import { useInViewOnce } from '../lib/useInViewOnce'
 
-const EASE = [0.16, 1, 0.3, 1]
-
-function LobItem({ item }) {
-  const [ref, inView] = useInViewOnce('-10% 0px')
-  return (
-    <motion.div
-      className="lob-item"
-      ref={ref}
-      initial={{ opacity: 0, y: 26 }}
-      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 26 }}
-      transition={{ duration: 0.65, ease: EASE, delay: 0.05 }}
-    >
-      <h3 className="lob-name">{item.name}</h3>
-      <p className="lob-body">{item.body}</p>
-      <a className="text-link" href={item.href}>
-        Learn more
-      </a>
-    </motion.div>
-  )
-}
-
+// Lines of business: a composed, triggered entrance (mist tone sweep, masked
+// headline reveal, rows cascade with hairline draws) wired in useHomepageMotion.
 export default function LinesOfBusiness() {
-  const [leftRef, leftIn] = useInViewOnce('-10% 0px')
-
   return (
     <section className="lob">
-      <div className="container lob-inner">
-        <motion.div
-          className="lob-left"
-          ref={leftRef}
-          initial={{ opacity: 0, y: 24 }}
-          animate={leftIn ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-          transition={{ duration: 0.7, ease: EASE }}
-        >
-          <span className="label">{lob.label}</span>
-          <h2 className="h-lg lob-headline">{lob.headline}</h2>
-        </motion.div>
-        <div className="lob-right">
+      <div className="lob-bg" aria-hidden="true"></div>
+      <div className="container">
+        <div className="rv">
+          <span className="sec-label ri" style={{ '--d': '0s' }}>
+            {lob.label}
+          </span>
+          <h2 className="lob-headline maskhead">
+            <span className="mask">
+              <span className="mline-s">{lob.headline}</span>
+            </span>
+          </h2>
+        </div>
+        <div className="lob-rows">
           {lob.items.map((item) => (
-            <LobItem key={item.name} item={item} />
+            <div className="lob-row rv ri" key={item.name}>
+              <div className="lob-name">
+                {item.name}
+                <span className="lob-arrow">&#8594;</span>
+              </div>
+              <p className="lob-body">{item.body}</p>
+            </div>
           ))}
         </div>
       </div>
